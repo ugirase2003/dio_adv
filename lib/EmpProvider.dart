@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:app/model/employee.dart'; // Import your Employee model
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class EmpProvider extends ChangeNotifier {
   List<Emp> emps = [];
@@ -61,16 +63,19 @@ class EmpProvider extends ChangeNotifier {
 
   updateData(
     Emp emp,
-  ) {
+    XFile? img,
+  ) async {
     final index = emps.indexWhere((element) => element.id == emp.id);
     // if (index != -1) {
     emps[index] = emp;
     notifyListeners();
-
-    // } else {
-    //   // Handle the case where the employee is not found (optional)
-    //   print('Employee with ID ${emp.id} not found.');
-    // }
+    img != null
+        ? dio.post("", data: FormData.fromMap(
+            // if img needs in binary form
+            {"img": MultipartFile.fromBytes(await img.readAsBytes())}))
+        : dio.post("",
+            data: FormData.fromMap(
+                {"name": emp.name, "department": emp.department}));
   }
 
   srchData(String srchQuery, String filter) {
